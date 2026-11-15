@@ -37,6 +37,15 @@
 #shorthandWork #shorthandAnswer{width:100%;min-width:0;min-height:clamp(320px,62vh,620px)}
 #shorthandWork .compare-box{grid-template-columns:1fr 1fr}
 @media(max-width:600px){#shorthandWork>.practice-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:7px!important}#shorthandWork>.practice-layout>.practice-pane{padding:8px}#shorthandWork .pane-scroll{height:48vh;min-height:260px}#shorthandWork #shorthandAnswer{min-height:48vh;font-size:15px}#shorthandWork .pane-toolbar{gap:4px}#shorthandWork .pane-toolbar button{padding:6px 7px;font-size:11px}#shorthandWork>.practice-layout h3{font-size:14px}}
+/* Final shorthand image layout: image frame follows the image proportions, with no unused wide panel. */
+#shorthandWork>.practice-layout{grid-template-columns:fit-content(48%) minmax(0,1fr)!important;gap:10px!important;align-items:stretch!important}
+#shorthandWork>.practice-layout>.practice-pane:first-child{width:max-content;max-width:48%;min-width:0}
+#shorthandWork>.practice-layout>.practice-pane:last-child{min-width:0;width:100%}
+#shorthandWork .pane-scroll{display:block;width:auto;max-width:100%;height:clamp(320px,62vh,620px);padding:0;overflow-y:auto;overflow-x:hidden;position:relative;overscroll-behavior-y:contain;touch-action:pan-y}
+#shorthandWork #exerciseImage{display:block;position:relative;left:50%;transform:translateX(-50%);width:auto;height:100%;max-width:none;max-height:none;object-fit:contain;object-position:top center;transition:none;user-select:none;-webkit-user-drag:none}
+#shorthandWork:fullscreen>.practice-layout{grid-template-columns:fit-content(48%) minmax(0,1fr)!important}
+#shorthandWork:fullscreen .pane-scroll{height:calc(100vh - 230px);min-height:320px}
+@media(max-width:600px){#shorthandWork>.practice-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important}#shorthandWork>.practice-layout>.practice-pane:first-child{width:100%;max-width:100%}#shorthandWork .pane-scroll{width:100%;height:48vh;min-height:260px}}
 
 </style></head>
 <body>
@@ -81,14 +90,17 @@ function showPanel(name){['home','shorthand','typing','learn','admin'].forEach(p
 async function loadExercises(){const {data,error}=await db.from('exercises').select('*').eq('published',true).order('created_at',{ascending:false});if(error){$('exerciseList').textContent=error.message;return;}$('exerciseList').innerHTML='';if(!data?.length){$('exerciseList').innerHTML='<p class="muted">No shorthand exercises have been added yet.</p>';return;}data.forEach(x=>{const d=document.createElement('div');d.className='exercise';d.innerHTML=`<h3>${escapeHtml(x.title)}</h3><p class="muted">Pitman shorthand exercise</p><button>Open Exercise</button>`;d.querySelector('button').onclick=()=>openExercise(x);$('exerciseList').appendChild(d);});}
 let shorthandZoom=1,passageZoom=16;
 function changeTextSize(id,delta){const el=$(id),size=Math.min(32,Math.max(12,parseInt(getComputedStyle(el).fontSize)||18)+delta*2);el.style.fontSize=size+'px';}
-function zoomShorthand(delta){shorthandZoom=Math.min(2.5,Math.max(.6,shorthandZoom+delta));$('exerciseImage').style.transform=`scale(${shorthandZoom})`;}
-function resetShorthandZoom(){shorthandZoom=1;$('exerciseImage').style.transform='scale(1)';}
+function sizeShorthandFrame(){const img=$('exerciseImage'),frame=img?.parentElement;if(!img||!frame||!img.naturalWidth||!img.naturalHeight)return;const h=frame.clientHeight;const desired=h*(img.naturalWidth/img.naturalHeight);const cap=Math.max(180,Math.min(window.innerWidth*.46,560));frame.style.width=Math.min(desired,cap)+'px';}
+function applyShorthandZoom(){const img=$('exerciseImage'),frame=img?.parentElement;if(!img||!frame||!img.naturalWidth||!img.naturalHeight)return;const h=frame.clientHeight;const maxW=frame.clientWidth;const fitScale=Math.min(maxW/img.naturalWidth,h/img.naturalHeight);const w=img.naturalWidth*fitScale*shorthandZoom;const ih=img.naturalHeight*fitScale*shorthandZoom;img.style.width=w+'px';img.style.height=ih+'px';img.style.maxWidth='none';img.style.maxHeight='none';img.style.margin='0';img.style.left='50%';img.style.transform='translateX(-50%)';}
+function zoomShorthand(delta){shorthandZoom=Math.min(2.5,Math.max(1,shorthandZoom+delta));applyShorthandZoom();}
+function resetShorthandZoom(){shorthandZoom=1;const img=$('exerciseImage');if(img?.naturalWidth){sizeShorthandFrame();applyShorthandZoom();}}
 async function toggleShorthandFullscreen(){const box=$('shorthandWork');try{if(!document.fullscreenElement){await box.requestFullscreen();}else{await document.exitFullscreen();}}catch(e){alert('Full Screen is not available in this browser. You can still use the normal practice layout.');}}
 function formatTyping(command){const editor=$('typingInput');if(editor.getAttribute('contenteditable')!=='true')return;editor.focus();document.execCommand(command,false,null); }
 function zoomPassage(delta){passageZoom=Math.min(30,Math.max(12,passageZoom+delta*2));$('typingPassage').style.fontSize=passageZoom+'px';}
 function resetPassageZoom(){passageZoom=16;$('typingPassage').style.fontSize='16px';}
-function openExercise(x){selectedExercise=x;$('exerciseTitle').textContent=x.title;$('exerciseImage').src=x.image_url;$('exerciseImage').onload=resetShorthandZoom;resetShorthandZoom();$('shorthandAnswer').value='';$('shorthandResult').classList.add('hidden');$('shorthandComparison').innerHTML='';$('shorthandWork').classList.remove('hidden');}
+function openExercise(x){selectedExercise=x;$('exerciseTitle').textContent=x.title;const img=$('exerciseImage');img.onload=()=>{sizeShorthandFrame();resetShorthandZoom();};img.src=x.image_url;$('shorthandAnswer').value='';$('shorthandResult').classList.add('hidden');$('shorthandComparison').innerHTML='';$('shorthandWork').classList.remove('hidden');requestAnimationFrame(()=>{sizeShorthandFrame();resetShorthandZoom();});}
 function closeShorthand(){$('shorthandWork').classList.add('hidden');}
+window.addEventListener('resize',()=>{if(selectedExercise&&$('shorthandWork')&&!$('shorthandWork').classList.contains('hidden')){sizeShorthandFrame();resetShorthandZoom();}});
 function normalize(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').trim();}
 function tokens(s){return normalize(s).match(/[a-z0-9']+|[^\w\s]/gi)||[];}
 function compareText(expected,actual){const a=tokens(expected),b=tokens(actual),n=a.length,m=b.length,dp=Array.from({length:n+1},()=>Array(m+1).fill(0));for(let i=0;i<=n;i++)dp[i][0]=i;for(let j=0;j<=m;j++)dp[0][j]=j;for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);let i=n,j=m,missing=0,extra=0,wrong=0;while(i||j){if(i&&j&&a[i-1]===b[j-1]){i--;j--;}else if(i&&j&&dp[i][j]===dp[i-1][j-1]+1){wrong++;i--;j--;}else if(i&&dp[i][j]===dp[i-1][j]+1){missing++;i--;}else{extra++;j--;}}const accuracy=Math.max(0,Math.round((1-(missing+extra+wrong)/Math.max(n,m,1))*100));const p1=(String(expected).match(/[.,!?;:]/g)||[]).join(''),p2=(String(actual).match(/[.,!?;:]/g)||[]).join('');return{missing,extra,wrong,accuracy,punctuation:p1===p2};}
