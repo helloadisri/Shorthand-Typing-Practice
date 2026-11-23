@@ -306,7 +306,7 @@ function showPanel(name){
    setExerciseCollection(['pitman','kailash','general','legal'].includes(sub)?sub:'pitman');
  }
  if(name==='typing'){showTypingSubsection('test');loadTypingPassages().then(()=>{$('passageSelect').onchange=()=>{resetTypingTest();selectTypingPassage();};}).catch(e=>showMessage('typingResult',e.message,'bad'));}
- if(name==='quiz'){loadQuizzes();}if($('adminAdditions'))$('adminAdditions').classList.toggle('hidden',name!=='admin'||profile?.role!=='admin');if(name==='admin'&&profile?.role==='admin'){loadAdminExercises();loadAdminTyping();loadAdminEnglishTyping();loadKailashVolumes(true);loadAdminQuizList();loadAdminUsers();}
+ if(name==='quiz'){loadQuizzes();}if($('adminAdditions'))$('adminAdditions').classList.toggle('hidden',name!=='admin'||profile?.role!=='admin');if(name==='admin'&&profile?.role==='admin'){loadAdminExercises();loadAdminTyping();loadAdminEnglishTyping();loadKailashVolumes(true);loadAdminQuizList();loadAdminUsers();if($('quizQuestionBuilder')&&!$('quizQuestionBuilder').children.length){quizBuilderCount=0;addQuizQuestionEditor();}}
  scrollToOpenedContent(name+'Panel');
 }
 async function loadExercises(){const {data,error}=await db.from('exercises').select('*').eq('published',true).order('created_at',{ascending:false});if(error){$('exerciseList').textContent=error.message;scrollToOpenedContent('exerciseList');return;}$('exerciseList').innerHTML='';if(!data?.length){$('exerciseList').innerHTML='<p class="muted">No shorthand exercises have been added yet.</p>';scrollToOpenedContent('exerciseList');return;}data.forEach(x=>{const d=document.createElement('div');d.className='exercise';d.innerHTML=`<h3>${escapeHtml(x.title)}</h3><p class="muted">Pitman shorthand exercise</p><button>Open Exercise</button>`;d.querySelector('button').onclick=()=>openExercise(x);$('exerciseList').appendChild(d);});scrollToOpenedContent('exerciseList');}
@@ -491,9 +491,7 @@ function setExerciseCollection(collection){$('shorthandWork')?.classList.add('hi
 async function loadAdminUsers(){const box=$('adminUsers');if(!box||profile?.role!=='admin')return;box.textContent='Loading profiles...';const {data,error}=await db.from('profiles').select('id,full_name,role,created_at').order('created_at',{ascending:false});if(error){box.textContent='Could not load profiles: '+error.message;return;}box.innerHTML=(data||[]).map(u=>`<div class="quiz-admin-item"><b>${escapeHtml(u.full_name||'Unnamed')}</b> · ${escapeHtml(u.role||'student')}<br><input id="userName_${u.id}" value="${escapeHtml(u.full_name||'')}" aria-label="Name"><button type="button" onclick="adminUpdateProfile('${u.id}')">Save name</button><button type="button" class="secondary" onclick="adminDeleteProfile('${u.id}')">Delete profile</button></div>`).join('')||'No profiles.';}
 async function adminUpdateProfile(id){if(profile?.role!=='admin')return;const name=$('userName_'+id)?.value.trim()||'';const {error}=await db.from('profiles').update({full_name:name}).eq('id',id);if(error)alert(error.message);else alert('Profile name updated.');}
 async function adminDeleteProfile(id){if(profile?.role!=='admin'||id===currentUser.id)return alert('You cannot delete your own profile.');if(!confirm('Delete this profile row only? The Auth login account will remain.'))return;const {error}=await db.from('profiles').delete().eq('id',id);if(error)alert(error.message);else loadAdminUsers();}
-/* Ensure a fresh question editor is ready when the admin panel opens. */
-const originalShowPanel=showPanel;
-function showPanel(name){originalShowPanel(name);if(name==='admin'&&profile?.role==='admin'&&$('quizQuestionBuilder')&&!$('quizQuestionBuilder').children.length){quizBuilderCount=0;addQuizQuestionEditor();}}
+/* Quiz question builder initialization is handled inside the original showPanel function. */
 
 </script>
 </body></html>
