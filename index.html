@@ -118,6 +118,19 @@
 #englishTypingEditor{min-height:220px;line-height:1.65;background:#fff;color:#172033;padding:14px;border:1px solid #cbd5e1;border-radius:10px;outline-offset:2px;white-space:normal;}
 #englishTypingEditor p{margin:0 0 .75em;}
 #typingEditEditor p,#typingInput p{margin:0 0 .65em;}
+
+/* ===== ODC user-friendly finish + online-only PDF library ===== */
+.odc-admin-main-nav{position:sticky;top:0;z-index:40;display:flex;gap:8px;flex-wrap:wrap;padding:12px;margin:0 0 16px;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border:1px solid #dce6f5;border-radius:15px;box-shadow:0 8px 24px #102c5518}.odc-admin-main-nav button{padding:9px 13px;border-radius:22px;font-size:13px}.odc-admin-main-nav button.active{background:linear-gradient(100deg,#1769e0,#7855db);color:#fff}.odc-admin-view-hidden{display:none!important}
+
+:root{--odc-focus:#1769e0;--odc-card-shadow:0 14px 34px rgba(17,54,112,.11)}
+button,a,.feature,.exercise,.stat,.quiz-admin-item{transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.feature,.exercise,.quiz-admin-item{border:1px solid rgba(210,224,246,.9)}
+.feature:hover,.exercise:hover,.quiz-admin-item:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(18,58,120,.14);border-color:#8bb9f4}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[contenteditable="true"]:focus-visible{outline:3px solid #55a8ff;outline-offset:2px}
+.pdf-library-head{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.eyebrow{font-size:11px;font-weight:900;letter-spacing:1.6px;color:#2973c8}.pdf-read-badge{padding:10px 15px;border-radius:30px;background:#e9f8f0;color:#16734c;font-weight:800;font-size:13px}.pdf-filter-row{display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,300px);gap:12px;margin:12px 0 18px}.pdf-filter-row input,.pdf-filter-row select{margin:0}.pdf-card{background:#fff;border:1px solid #dce7f6;border-radius:16px;padding:18px;box-shadow:0 7px 20px rgba(19,55,105,.06)}.pdf-card:hover{transform:translateY(-3px);box-shadow:var(--odc-card-shadow);border-color:#8bb9f4}.pdf-card-category{display:inline-block;border-radius:20px;background:#edf4ff;color:#245a9e;padding:5px 10px;font-size:11px;font-weight:800}.pdf-card h3{margin:12px 0 7px}.pdf-reader{margin-top:20px;border:1px solid #d8e4f4;border-radius:16px;overflow:hidden;background:#eef3fa}.pdf-reader-top,.pdf-reader-tools{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;background:#fff;border-bottom:1px solid #dce6f5}.pdf-reader-tools{justify-content:center}.pdf-canvas-stage{height:min(75vh,900px);overflow:auto;padding:18px;display:flex;justify-content:center;align-items:flex-start;overscroll-behavior:contain}.pdf-canvas-stage canvas{max-width:100%;height:auto!important;background:#fff;box-shadow:0 5px 22px #152c4b25;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}.pdf-publish-toggle{display:flex;align-items:center;gap:9px;margin:8px 0 14px}.pdf-publish-toggle input{width:auto;margin:0}.pdf-admin-actions{display:flex;gap:9px;flex-wrap:wrap}.pdf-admin-item{padding:13px;border:1px solid var(--line);border-radius:12px;background:#fff;margin:9px 0}.pdf-admin-item .muted{margin:4px 0 9px}.typing-editor{cursor:text;user-select:text;-webkit-user-select:text;pointer-events:auto;position:relative;z-index:1}.typing-editor[contenteditable="true"]{background:#fff;cursor:text}.typing-editor[contenteditable="false"]{cursor:pointer}.typing-editor:focus{outline:3px solid #1769e01c}
+@media(max-width:650px){.pdf-filter-row{grid-template-columns:1fr}.pdf-reader-tools{gap:7px}.pdf-reader-tools button{padding:9px 11px}.pdf-canvas-stage{height:68vh;padding:8px}}
+@media(prefers-reduced-motion:reduce){button,a,.feature,.exercise,.stat,.quiz-admin-item{transition:none!important}.feature:hover,.exercise:hover,.quiz-admin-item:hover{transform:none}}
+
 </style>
 <meta name="theme-color" content="#071a3b">
 <style>
@@ -150,7 +163,7 @@ button,select,input,.exercise,.practice-pane,.card,.tabs button,.status,.result-
 <main class="wrap">
 <section class="card hidden" id="setupWarning"><h2>Website Setup Required</h2><p>Supabase configuration is missing. Please check the CONFIG section in this file.</p></section>
 <section class="card" id="authCard"><h2>🎓 Student Login / Registration</h2><div class="grid"><div><h3>Login to Your Account</h3><label>Email</label><input id="loginEmail" placeholder="Enter your email" type="email"/><label>Password</label><input id="loginPassword" placeholder="Enter password" type="password"/><button onclick="login()">Login</button><button class="secondary" onclick="showForgot()">Forgot Password?</button></div><div><h3>Create a Free Account</h3><label>Full Name</label><input id="signupName" placeholder="Your full name"/><label>Email</label><input id="signupEmail" placeholder="Email address" type="email"/><label>Password</label><input id="signupPassword" minlength="6" placeholder="At least 6 characters" type="password"/><button onclick="signup()">Register Free</button><p class="muted">No registration fee. No payment gateway.</p></div></div><div class="status hidden" id="authMessage"></div><div class="status hidden" id="forgotBox"><h3>Reset Password</h3><label>Registered Email</label><input id="forgotEmail" placeholder="Enter your registered email" type="email"/><button onclick="sendResetLink()">Send Reset Link</button></div><div class="status hidden" id="recoveryBox"><h3>Set a New Password</h3><label>New Password</label><input id="newPassword" minlength="6" placeholder="At least 6 characters" type="password"/><button onclick="updatePassword()">Update Password</button></div></section>
-<section class="hidden" id="app"><nav class="tabs"><button data-panel="home" onclick="showPanel('home')">🏠 Home</button><button class="secondary" data-panel="shorthand" onclick="showPanel('shorthand')">✍️ Shorthand</button><button class="secondary" data-panel="typing" onclick="showPanel('typing')">⌨️ English Typing</button><button class="secondary" data-panel="quiz" onclick="showPanel('quiz')">🧠 Computer Quiz</button><button class="secondary" data-panel="learn" onclick="showPanel('learn')">📚 Learn Daily</button><button class="secondary hidden" data-panel="admin" id="adminTab" onclick="showPanel('admin')">⚙️ Admin Panel</button><button class="secondary" onclick="logout()">Logout</button></nav>
+<section class="hidden" id="app"><nav class="tabs"><button data-panel="home" onclick="showPanel('home')">🏠 Home</button><button class="secondary" data-panel="shorthand" onclick="showPanel('shorthand')">✍️ Shorthand</button><button class="secondary" data-panel="typing" onclick="showPanel('typing')">⌨️ English Typing</button><button class="secondary" data-panel="quiz" onclick="showPanel('quiz')">🧠 Computer Quiz</button><button class="secondary" data-panel="learn" onclick="showPanel('learn')">📚 PDF Library</button><button class="secondary hidden" data-panel="admin" id="adminTab" onclick="showPanel('admin')">⚙️ Admin Panel</button><button class="secondary" onclick="logout()">Logout</button></nav>
 <section class="card" id="homePanel"><h2>Welcome, <span id="studentName">Student</span>! 👋</h2><p class="muted">Choose a section and start practising. Your results are saved in your account.</p><div class="grid"><div class="feature blue"><h3>✍️ Pitman Shorthand</h3><p>View exercise images and practise your transcription.</p><button onclick="showPanel('shorthand')">Open Shorthand</button></div><div class="feature pink"><h3>⌨️ English Typing</h3><p>Improve your typing speed, accuracy and confidence.</p><button onclick="showPanel('typing')">Start Typing</button></div></div></section>
 <section class="card hidden" id="shorthandPanel"><h2>✍️ Shorthand Practice</h2>
 <div class="tabs shorthand-subnav" id="shorthandSubnav"><button type="button" data-sh-sub="pitman" onclick="setExerciseCollection('pitman')">Pitman Shorthand</button><button type="button" class="secondary" data-sh-sub="kailash" onclick="setExerciseCollection('kailash')">Kailash Chandra</button><button type="button" class="secondary" data-sh-sub="general" onclick="setExerciseCollection('general')">General Matter</button><button type="button" class="secondary" data-sh-sub="legal" onclick="setExerciseCollection('legal')">Legal Matter</button></div>
@@ -183,7 +196,7 @@ button,select,input,.exercise,.practice-pane,.card,.tabs button,.status,.result-
 
 </section>
 
-<section class="card hidden" id="learnPanel"><h2>📚 Learn Daily</h2><p class="muted">Three independent learning areas. Content is controlled by the Admin Panel.</p><div class="tabs" id="learnFilters"><button type="button" onclick="filterLearn('all')">All Sections</button><button type="button" class="secondary" onclick="filterLearn('Computer Knowledge')">Computer Knowledge</button><button type="button" class="secondary" onclick="filterLearn('Shortcut Keys')">Shortcut Keys</button><button type="button" class="secondary" onclick="filterLearn('Daily Learning')">Daily Learning</button></div><input id="learnSearch" oninput="renderLearn()" placeholder="Search lessons, shortcut keys or full forms..."/><div class="grid" id="learnContent"><p class="muted">Loading learning content...</p></div></section>
+<section class="card hidden" id="learnPanel"><div class="pdf-library-head"><div><span class="eyebrow">OUR DIGITAL CLASSROOM</span><h2>📚 Important Study Material</h2><p class="muted">Study notes and important documents — available for online reading.</p></div><div class="pdf-read-badge">Online Reading Only</div></div><div class="pdf-filter-row"><input id="learnSearch" oninput="renderLearn()" placeholder="Search PDF by title or description..." aria-label="Search study material"><select id="pdfCategoryFilter" onchange="renderLearn()" aria-label="Filter by category"><option value="all">All Categories</option><option>Shorthand Notes</option><option>English Notes</option><option>Computer Notes</option><option>General Knowledge</option><option>Previous Year Papers</option><option>Important Study Material</option></select></div><div class="grid" id="learnContent"><p class="muted">Loading study material...</p></div><div id="pdfReader" class="pdf-reader hidden" aria-label="Online PDF reader"><div class="pdf-reader-top"><div><b id="pdfReaderTitle">PDF Reader</b><div class="muted">Online reading only</div></div><button type="button" class="secondary" onclick="closePdfReader()">✕ Close</button></div><div class="pdf-reader-tools"><button type="button" class="secondary" onclick="pdfPrevPage()">Previous</button><span id="pdfPageLabel">Page 1 / 1</span><button type="button" class="secondary" onclick="pdfNextPage()">Next</button><button type="button" class="secondary" onclick="pdfZoom(-1)">−</button><button type="button" class="secondary" onclick="pdfZoom(1)">+</button></div><div id="pdfCanvasStage" class="pdf-canvas-stage"><canvas id="pdfCanvas"></canvas></div></div></section>
 <section class="card hidden" id="quizPanel"><h2>🧠 Computer Quiz</h2><p class="muted">Select a published test, start its independent timer, and submit when ready.</p><div id="quizList"></div><div class="hidden" id="quizWork"><div class="topline"><div><span class="quiz-timer" id="quizTimer">00:00</span><div class="muted">QUIZ TIME LEFT</div></div><div class="quiz-toolbar"><button type="button" onclick="toggleQuizFullscreen()" class="secondary">⛶ Full Screen</button><button type="button" onclick="submitQuiz()" id="quizSubmit">Submit Quiz</button></div></div><h3 id="quizTitle"></h3><div id="quizQuestions"></div><div id="quizResult" class="status hidden"></div><button type="button" onclick="submitQuiz()" id="quizSubmitBottom">Submit Quiz</button></div></section><section class="card hidden" id="adminPanel"><h2>⚙️ Admin Dashboard</h2><div class="admin-note">Admin permissions are checked securely by Supabase. Only an account whose profile role is admin can manage content.</div>
 <div class="divider"></div><h3>➕ Add Shorthand Exercise</h3>
 <label>Exercise Title</label><input id="newTitle" placeholder="Example: Pitman Exercise 1"/><label>Upload Exercise Image (JPG, PNG or WEBP; max 5 MB)</label><input accept="image/jpeg,image/png,image/webp" id="newImageFile" type="file"/><label>Correct English Transcription</label><div class="admin-rich-toolbar" data-editor-toolbar="newAnswerEditor"><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('newAnswerEditor','bold')"><b>B</b></button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('newAnswerEditor','italic')"><i>I</i></button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('newAnswerEditor','underline')"><u>U</u></button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('newAnswerEditor','justifyLeft')">Left</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('newAnswerEditor','justifyCenter')">Center</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('newAnswerEditor','justifyRight')">Right</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('newAnswerEditor','justifyFull')">Justify</button><button type="button" class="secondary" onclick="adminEditorSize('newAnswerEditor',-1)">A−</button><button type="button" class="secondary" onclick="adminEditorSize('newAnswerEditor',1)">A+</button><button type="button" class="secondary editor-case-button" onmousedown="event.preventDefault()" onclick="editorChangeCase('newAnswerEditor','upper')">AA</button><button type="button" class="secondary editor-case-button" onmousedown="event.preventDefault()" onclick="editorChangeCase('newAnswerEditor','lower')">aa</button><span class="muted small">Tab = indent</span></div><div id="newAnswerEditor" class="admin-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Enter the complete correct transcription..." spellcheck="false"></div><button onclick="addExercise()">Upload &amp; Save Exercise</button><div class="status hidden" id="adminMessage"></div><h3 style="margin-top:20px">Existing Shorthand Exercises</h3><div id="adminExerciseList"></div>
@@ -195,7 +208,7 @@ button,select,input,.exercise,.practice-pane,.card,.tabs button,.status,.result-
 <div class="divider"></div><h3>⌨️ English Typing — Passage Management</h3><p class="muted">Only English Typing passages are managed here. Add, edit or delete passages. Formatting and paragraph breaks are saved.</p><label>English Typing Passage Title</label><input id="englishTypingTitle" placeholder="Example: English Typing Passage 1"/><label>English Typing Passage</label><div class="admin-rich-toolbar" data-editor-toolbar="englishTypingEditor"><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','bold')"><b>B</b></button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','italic')"><i>I</i></button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','underline')"><u>U</u></button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','justifyLeft')">Left</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','justifyCenter')">Center</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','justifyRight')">Right</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','justifyFull')">Justify</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','insertUnorderedList')">• List</button><button type="button" class="secondary" onmousedown="event.preventDefault()" onclick="adminEditorFormat('englishTypingEditor','insertOrderedList')">1. List</button><button type="button" class="secondary" onclick="adminEditorSize('englishTypingEditor',-1)">A−</button><button type="button" class="secondary" onclick="adminEditorSize('englishTypingEditor',1)">A+</button><button type="button" class="secondary editor-case-button" onmousedown="event.preventDefault()" onclick="editorChangeCase('englishTypingEditor','upper')">AA</button><button type="button" class="secondary editor-case-button" onmousedown="event.preventDefault()" onclick="editorChangeCase('englishTypingEditor','lower')">aa</button><span class="muted small">Enter = new paragraph • Tab = indent</span></div><div id="englishTypingEditor" class="admin-rich-editor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Type or paste the English passage here..." spellcheck="false"></div><button type="button" onclick="addEnglishTypingPassage()">Save English Typing Passage</button><h3 style="margin-top:20px">Existing English Typing Passages</h3><div id="adminEnglishTypingList"></div>
 <div class="divider"></div><h3>📊 Student Practice Results</h3><button class="secondary" onclick="loadResults()">Refresh Results</button><div id="allResults"></div></section></section>
 </main><footer>© <span id="year"></span> Our Digital Classroom • Learn • Practise • Improve</footer>
-<div id="adminAdditions" class="hidden"><div class="divider"></div><h3>🧠 Computer Quiz Management</h3><p class="muted">Create tests with questions in JSON format. Existing content remains unchanged.</p><label>Quiz title</label><input id="quizAdminTitle" placeholder="Computer Fundamentals Test"/><label>Duration (minutes)</label><input id="quizAdminDuration" type="number" min="1" value="10"/><h4>Add Questions and Options</h4><div id="quizQuestionBuilder"></div><button type="button" class="secondary" onclick="addQuizQuestionEditor()">＋ Add Question</button><button type="button" id="quizSaveButton" onclick="adminSaveQuiz()">Save Quiz</button><button type="button" id="quizCancelEditButton" class="secondary hidden" onclick="adminCancelQuizEdit()">Cancel Edit</button><div id="quizAdminList"></div><div class="divider"></div><h3>👥 Registered Profiles</h3><p class="muted">This panel manages profile records only. Deleting a profile record does not delete the Supabase Auth account; full account deletion requires a secure server-side admin service.</p><button type="button" onclick="loadAdminUsers()">Refresh Users</button><div id="adminUsers"></div><div class="divider"></div><h3>📚 Learn Daily — Content Management</h3><p class="muted">Manage Computer Knowledge, Shortcut Keys and Daily Learning separately. Existing Learn Daily records are retained.</p><label>Content Category</label><select id="learnCategory"><option>Computer Knowledge</option><option>Shortcut Keys</option><option>Daily Learning</option></select><label>Content Title</label><input id="learnTitle" placeholder="Example: Computer Fundamentals — Input Devices"/><label>Shortcut Key (optional)</label><input id="learnShortcut" placeholder="Example: Ctrl + C"/><label>Shortcut Function (optional)</label><input id="learnUse" placeholder="Example: Copies selected text"/><label>Content / Explanation</label><textarea id="learnBody" placeholder="Write lesson, notes, full forms or explanation..." style="min-height:160px"></textarea><button type="button" onclick="addLearnContent()">Save Learn Daily Content</button><div id="learnAdminMessage" class="status hidden"></div><h3 style="margin-top:18px">Existing Learn Daily Content</h3><button type="button" class="secondary" onclick="loadAdminLearn()">Refresh Learn Daily</button><div id="adminLearnList"></div></div><script>
+<div id="adminAdditions" class="hidden"><div class="divider"></div><h3>🧠 Computer Quiz Management</h3><p class="muted">Create tests with questions in JSON format. Existing content remains unchanged.</p><label>Quiz title</label><input id="quizAdminTitle" placeholder="Computer Fundamentals Test"/><label>Duration (minutes)</label><input id="quizAdminDuration" type="number" min="1" value="10"/><h4>Add Questions and Options</h4><div id="quizQuestionBuilder"></div><button type="button" class="secondary" onclick="addQuizQuestionEditor()">＋ Add Question</button><button type="button" id="quizSaveButton" onclick="adminSaveQuiz()">Save Quiz</button><button type="button" id="quizCancelEditButton" class="secondary hidden" onclick="adminCancelQuizEdit()">Cancel Edit</button><div id="quizAdminList"></div><div class="divider"></div><h3>👥 Registered Profiles</h3><p class="muted">This panel manages profile records only. Deleting a profile record does not delete the Supabase Auth account; full account deletion requires a secure server-side admin service.</p><button type="button" onclick="loadAdminUsers()">Refresh Users</button><div id="adminUsers"></div><div class="divider"></div><h3>📚 Important Study Material — PDF Management</h3><p class="muted">Upload PDFs for students to read online. Student view has no download, copy or print controls. Existing Learn Daily records are not deleted.</p><label>PDF Title</label><input id="pdfAdminTitle" placeholder="Example: Computer Fundamentals Notes"><label>Category</label><select id="pdfAdminCategory"><option>Shorthand Notes</option><option>English Notes</option><option>Computer Notes</option><option>General Knowledge</option><option>Previous Year Papers</option><option>Important Study Material</option></select><label>Description (optional)</label><textarea id="pdfAdminDescription" placeholder="Short description of this PDF..." style="min-height:90px"></textarea><label>Upload PDF (maximum 50 MB)</label><input id="pdfAdminFile" type="file" accept="application/pdf,.pdf"><label class="pdf-publish-toggle"><input id="pdfAdminPublished" type="checkbox" checked> Publish for students after saving</label><input id="pdfAdminEditingId" type="hidden"><div class="pdf-admin-actions"><button type="button" onclick="saveStudyPdf()" id="pdfAdminSaveBtn">Upload PDF</button><button type="button" class="secondary hidden" id="pdfAdminCancelBtn" onclick="cancelStudyPdfEdit()">Cancel Edit</button><button type="button" class="secondary" onclick="loadAdminLearn()">Refresh PDF List</button></div><div id="learnAdminMessage" class="status hidden" aria-live="polite"></div><h3 style="margin-top:18px">Uploaded PDFs</h3><div id="adminLearnList"></div></div><script>
 // =============== SUPABASE CONFIGURATION ===============
 const SUPABASE_URL = "https://pengulxgbprgzrhkjudl.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_Ezc0yCz1TjbdyIL0j6wPXQ_I5GCvUCc";
@@ -684,4 +697,186 @@ odcSetTypingFontSize(18);
 
 </script>
 
+<script id="odc-final-integration">
+/* ODC final integration: student PDF reader, admin PDF management, reliable typing focus. */
+(function(){
+  const $id=id=>document.getElementById(id);
+  const escape=(v)=>typeof escapeHtml==='function'?escapeHtml(String(v??'')):String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const BUCKET='study-material-pdfs', TABLE='study_material_pdfs';
+  let pdfItems=[],pdfDoc=null,pdfPage=1,pdfScale=1.15,pdfSignedUrl=null,pdfLoading=false;
+  let typingSelectionRange=null;
+
+  // Never delete or migrate legacy learn_daily rows. The student-facing Learn panel now reads the new PDF table only.
+  window.loadLearnContent=async function(){
+    const box=$id('learnContent');if(!box)return;
+    box.innerHTML='<p class="muted">Loading study material...</p>';
+    const {data,error}=await db.from(TABLE).select('id,title,description,category,storage_path,published,created_at').eq('published',true).order('created_at',{ascending:false});
+    if(error){box.innerHTML='<div class="status bad">PDF Library is not ready yet. Admin setup may be required. '+escape(error.message)+'</div>';return;}
+    pdfItems=data||[];window.renderLearn();
+  };
+  window.renderLearn=function(){
+    const box=$id('learnContent');if(!box)return;
+    const q=($id('learnSearch')?.value||'').trim().toLowerCase(),cat=$id('pdfCategoryFilter')?.value||'all';
+    const list=pdfItems.filter(x=>(cat==='all'||x.category===cat)&&(!q||[x.title,x.description,x.category].join(' ').toLowerCase().includes(q)));
+    if(!list.length){box.innerHTML='<div class="status">No published PDFs found in this category.</div>';return;}
+    box.innerHTML=list.map(x=>`<article class="pdf-card"><span class="pdf-card-category">${escape(x.category||'Study Material')}</span><h3>${escape(x.title)}</h3><p class="muted">${escape(x.description||'Online study material')}</p><button type="button" onclick="openStudyPdf('${String(x.id).replace(/[^a-zA-Z0-9-]/g,'')}')">📖 Read Online</button></article>`).join('');
+  };
+
+  async function ensurePdfJs(){
+    if(window.pdfjsLib)return window.pdfjsLib;
+    if(window.__odcPdfJsPromise)return window.__odcPdfJsPromise;
+    window.__odcPdfJsPromise=new Promise((resolve,reject)=>{
+      const sc=document.createElement('script');sc.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';sc.onload=()=>{if(!window.pdfjsLib)return reject(new Error('PDF reader library did not load.'));window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';resolve(window.pdfjsLib);};sc.onerror=()=>reject(new Error('Could not load the online PDF reader. Check your internet connection.'));document.head.appendChild(sc);
+    });return window.__odcPdfJsPromise;
+  }
+  window.openStudyPdf=async function(id){
+    if(pdfLoading)return;pdfLoading=true;
+    const item=pdfItems.find(x=>x.id===id);if(!item){pdfLoading=false;return alert('This PDF is no longer available. Refresh the library.');}
+    const reader=$id('pdfReader');reader.classList.remove('hidden');$id('pdfReaderTitle').textContent=item.title||'PDF Reader';$id('pdfCanvasStage').innerHTML='<div class="status">Opening PDF securely...</div>';
+    try{
+      const {data:signed,error}=await db.storage.from(BUCKET).createSignedUrl(item.storage_path,900);
+      if(error)throw error;pdfSignedUrl=signed.signedUrl;
+      const lib=await ensurePdfJs();pdfDoc=await lib.getDocument({url:pdfSignedUrl,withCredentials:false}).promise;pdfPage=1;pdfScale=1.15;
+      $id('pdfCanvasStage').innerHTML='<canvas id="pdfCanvas"></canvas>';await renderPdfPage();
+      reader.scrollIntoView({behavior:'smooth',block:'start'});
+    }catch(e){$id('pdfCanvasStage').innerHTML='<div class="status bad">Unable to open this PDF: '+escape(e.message||e)+'</div>';}
+    finally{pdfLoading=false;}
+  };
+  async function renderPdfPage(){
+    if(!pdfDoc)return;const page=await pdfDoc.getPage(pdfPage),viewport=page.getViewport({scale:pdfScale}),canvas=$id('pdfCanvas');if(!canvas)return;
+    const ctx=canvas.getContext('2d',{alpha:false}),ratio=Math.min(window.devicePixelRatio||1,1.6);
+    canvas.width=Math.floor(viewport.width*ratio);canvas.height=Math.floor(viewport.height*ratio);canvas.style.width=Math.floor(viewport.width)+'px';canvas.style.height=Math.floor(viewport.height)+'px';
+    await page.render({canvasContext:ctx,viewport,transform:ratio===1?null:[ratio,0,0,ratio,0,0]}).promise;
+    $id('pdfPageLabel').textContent=`Page ${pdfPage} / ${pdfDoc.numPages}`;
+    $id('pdfCanvasStage').scrollTop=0;
+  }
+  window.pdfPrevPage=async()=>{if(pdfDoc&&pdfPage>1){pdfPage--;await renderPdfPage();}};
+  window.pdfNextPage=async()=>{if(pdfDoc&&pdfPage<pdfDoc.numPages){pdfPage++;await renderPdfPage();}};
+  window.pdfZoom=async(delta)=>{if(!pdfDoc)return;pdfScale=Math.max(.65,Math.min(2.2,pdfScale+delta*.15));await renderPdfPage();};
+  window.closePdfReader=function(){pdfDoc?.destroy?.();pdfDoc=null;pdfSignedUrl=null;$id('pdfReader')?.classList.add('hidden');$id('pdfCanvasStage').innerHTML='';};
+
+  // Canvas reader has no text layer, download, copy, or print UI. Block common casual shortcuts while it is open.
+  document.addEventListener('contextmenu',e=>{if(e.target.closest('#pdfReader'))e.preventDefault();});
+  document.addEventListener('copy',e=>{if(e.target.closest('#pdfReader'))e.preventDefault();});
+  document.addEventListener('keydown',e=>{if(!$id('pdfReader')||$id('pdfReader').classList.contains('hidden'))return;if((e.ctrlKey||e.metaKey)&&['s','p','c'].includes(e.key.toLowerCase())){e.preventDefault();e.stopPropagation();}} ,true);
+
+  // Admin PDF list and actions. Only authenticated profile admins may write.
+  window.loadAdminLearn=async function(){
+    const box=$id('adminLearnList');if(!box||profile?.role!=='admin')return;
+    box.innerHTML='Loading PDFs...';const {data,error}=await db.from(TABLE).select('*').order('created_at',{ascending:false});
+    if(error){box.innerHTML='<div class="status bad">Could not load PDFs: '+escape(error.message)+'</div>';return;}
+    if(!data?.length){box.innerHTML='<p class="muted">No PDFs uploaded yet.</p>';return;}
+    box.innerHTML=data.map(x=>`<div class="pdf-admin-item"><b>${escape(x.title)}</b><div class="muted">${escape(x.category)} · ${x.published?'Published':'Unpublished'}</div><div class="muted">${escape(x.description||'No description')}</div><button type="button" class="secondary small" onclick="editStudyPdf('${String(x.id).replace(/[^a-zA-Z0-9-]/g,'')}')">Edit</button> <button type="button" class="secondary small" onclick="toggleStudyPdf('${String(x.id).replace(/[^a-zA-Z0-9-]/g,'')}',${!x.published})">${x.published?'Unpublish':'Publish'}</button> <button type="button" class="danger small" onclick="deleteStudyPdf('${String(x.id).replace(/[^a-zA-Z0-9-]/g,'')}')">Delete</button></div>`).join('');
+  };
+  window.saveStudyPdf=async function(){
+    if(profile?.role!=='admin'||!currentUser)return alert('Admin access required.');
+    const title=$id('pdfAdminTitle').value.trim(),category=$id('pdfAdminCategory').value,description=$id('pdfAdminDescription').value.trim(),file=$id('pdfAdminFile').files[0],editingId=$id('pdfAdminEditingId').value,published=$id('pdfAdminPublished').checked;
+    if(!title)return showMessage('learnAdminMessage','Please enter a PDF title.','bad');
+    if(!editingId&&!file)return showMessage('learnAdminMessage','Please choose a PDF file.','bad');
+    if(file&&(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')))return showMessage('learnAdminMessage','Only PDF files are allowed.','bad');
+    if(file&&file.size>50*1024*1024)return showMessage('learnAdminMessage','PDF size must be 50 MB or less.','bad');
+    showMessage('learnAdminMessage',file?'Uploading PDF securely...':'Saving PDF details...');
+    let storage_path=null,oldPath=null;
+    if(editingId){const {data:old}=await db.from(TABLE).select('storage_path').eq('id',editingId).single();oldPath=old?.storage_path||null;}
+    if(file){const clean=file.name.replace(/[^a-zA-Z0-9._-]/g,'_'),path=`${currentUser.id}/${Date.now()}-${clean}`;const {error:upErr}=await db.storage.from(BUCKET).upload(path,file,{upsert:false,contentType:'application/pdf'});if(upErr)return showMessage('learnAdminMessage','PDF upload failed: '+upErr.message,'bad');storage_path=path;}
+    const payload={title,description:description||null,category,published,updated_at:new Date().toISOString()};if(storage_path)payload.storage_path=storage_path;
+    let result;if(editingId)result=await db.from(TABLE).update(payload).eq('id',editingId);else{payload.storage_path=storage_path;payload.created_by=currentUser.id;result=await db.from(TABLE).insert(payload);}
+    if(result.error){if(storage_path)await db.storage.from(BUCKET).remove([storage_path]);return showMessage('learnAdminMessage','Could not save PDF details: '+result.error.message,'bad');}
+    if(storage_path&&oldPath)await db.storage.from(BUCKET).remove([oldPath]);
+    window.cancelStudyPdfEdit();showMessage('learnAdminMessage',editingId?'PDF details updated successfully.':'PDF uploaded successfully.','good');await window.loadAdminLearn();await window.loadLearnContent();
+  };
+  window.editStudyPdf=async function(id){if(profile?.role!=='admin')return;const {data,error}=await db.from(TABLE).select('*').eq('id',id).single();if(error)return alert(error.message);$id('pdfAdminTitle').value=data.title||'';$id('pdfAdminCategory').value=data.category||'Important Study Material';$id('pdfAdminDescription').value=data.description||'';$id('pdfAdminPublished').checked=!!data.published;$id('pdfAdminEditingId').value=data.id;$id('pdfAdminFile').value='';$id('pdfAdminSaveBtn').textContent='Save PDF Changes';$id('pdfAdminCancelBtn').classList.remove('hidden');$id('pdfAdminTitle').scrollIntoView({behavior:'smooth',block:'center'});};
+  window.cancelStudyPdfEdit=function(){if($id('pdfAdminTitle'))$id('pdfAdminTitle').value='';if($id('pdfAdminDescription'))$id('pdfAdminDescription').value='';if($id('pdfAdminFile'))$id('pdfAdminFile').value='';if($id('pdfAdminEditingId'))$id('pdfAdminEditingId').value='';if($id('pdfAdminPublished'))$id('pdfAdminPublished').checked=true;if($id('pdfAdminSaveBtn'))$id('pdfAdminSaveBtn').textContent='Upload PDF';$id('pdfAdminCancelBtn')?.classList.add('hidden');};
+  window.toggleStudyPdf=async function(id,published){if(profile?.role!=='admin')return;const {error}=await db.from(TABLE).update({published,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);await window.loadAdminLearn();await window.loadLearnContent();};
+  window.deleteStudyPdf=async function(id){if(profile?.role!=='admin'||!confirm('Delete this PDF permanently?'))return;const {data,error}=await db.from(TABLE).select('storage_path').eq('id',id).single();if(error)return alert(error.message);const {error:delErr}=await db.from(TABLE).delete().eq('id',id);if(delErr)return alert(delErr.message);if(data?.storage_path)await db.storage.from(BUCKET).remove([data.storage_path]);await window.loadAdminLearn();await window.loadLearnContent();};
+
+  // Replace the old Learn Daily section name in nav and panel headings without changing other sections.
+  document.querySelectorAll('[data-panel="learn"]').forEach(b=>{b.textContent='📚 PDF Library';});
+  const learnHeading=$id('learnPanel')?.querySelector('h2');if(learnHeading)learnHeading.textContent='📚 Important Study Material';
+
+  // Reliable editor activation: clicking the typing surface starts the selected test and focuses the actual contenteditable.
+  function placeCaretAtEnd(el){try{el.focus({preventScroll:true});const range=document.createRange();range.selectNodeContents(el);range.collapse(false);const sel=window.getSelection();sel.removeAllRanges();sel.addRange(range);}catch(e){el.focus();}}
+  const typingBox=$id('typingInput');
+  if(typingBox){
+    typingBox.setAttribute('contenteditable','false');typingBox.setAttribute('aria-readonly','true');
+    typingBox.addEventListener('click',async function(){
+      if(typingStarted){this.setAttribute('contenteditable','true');this.setAttribute('aria-readonly','false');this.focus({preventScroll:true});return;}
+      if(!$id('passageSelect')?.value){showMessage('typingResult','Pehle typing passage aur duration select karo, phir Start Test dabao.','bad');$id('passageSelect')?.focus();return;}
+      await window.startTypingTest();
+      if(typingStarted){this.setAttribute('aria-readonly','false');placeCaretAtEnd(this);}
+    });
+    typingBox.addEventListener('beforeinput',e=>{if(!typingStarted){e.preventDefault();}});
+    typingBox.addEventListener('focus',()=>{if(typingStarted){typingBox.setAttribute('contenteditable','true');typingBox.setAttribute('aria-readonly','false');}});
+  }
+  const originalStart=window.startTypingTest;
+  window.startTypingTest=async function(){
+    if(typingStarted)return;
+    if(!$id('passageSelect')?.value){showMessage('typingResult','Please choose a typing passage first.','bad');$id('passageSelect')?.focus();return;}
+    await originalStart();
+    if(typingStarted&&$id('typingInput')){$id('typingInput').setAttribute('contenteditable','true');$id('typingInput').setAttribute('aria-readonly','false');placeCaretAtEnd($id('typingInput'));}
+  };
+  // Formatting toolbar keeps the current text selection and restores it after the toolbar action.
+  document.querySelectorAll('#typingTestArea .pane-toolbar button').forEach(btn=>{
+    btn.addEventListener('mousedown',()=>{const el=$id('typingInput');if(!el||!typingStarted)return;const sel=window.getSelection();if(sel?.rangeCount&&el.contains(sel.anchorNode))typingSelectionRange=sel.getRangeAt(0).cloneRange();});
+  });
+  const oldFormat=window.formatTyping;
+  window.formatTyping=function(command){const el=$id('typingInput');if(!el||!typingStarted)return;el.focus({preventScroll:true});if(typingSelectionRange){const sel=window.getSelection();sel.removeAllRanges();sel.addRange(typingSelectionRange);}
+    try{document.execCommand(command,false,null);}catch(e){console.warn('Typing format command failed',e);}el.focus({preventScroll:true});const sel=window.getSelection();if(sel?.rangeCount&&el.contains(sel.anchorNode))typingSelectionRange=sel.getRangeAt(0).cloneRange();
+  };
+  // The original reset remains responsible for all timer state; ensure the editor is non-editable after reset.
+  const oldFinish=window.finishTypingTest;
+  window.finishTypingTest=async function(reason='manual'){if(typeof oldFinish==='function')await oldFinish(reason);if($id('typingInput')){$id('typingInput').setAttribute('contenteditable','false');$id('typingInput').setAttribute('aria-readonly','true');}};
+  const oldReset=window.resetTypingTest;
+  window.resetTypingTest=function(){if(typeof oldReset==='function')oldReset();if($id('typingInput')){$id('typingInput').setAttribute('contenteditable','false');$id('typingInput').setAttribute('aria-readonly','true');}};
+
+  function setupAdminNavigation(){
+    const panel=$id('adminPanel'),extra=$id('adminAdditions');if(!panel||panel.dataset.odcMainTabs==='1')return;
+    panel.dataset.odcMainTabs='1';
+    const nav=document.createElement('nav');nav.className='odc-admin-main-nav';nav.setAttribute('aria-label','Admin sections');
+    const tabs=[['shorthand','Shorthand'],['typing','English Typing'],['results','Results'],['quiz','Quiz'],['users','Users'],['pdf','PDF Library']];
+    nav.innerHTML=tabs.map(([key,label])=>`<button type="button" data-admin-tab="${key}">${label}</button>`).join('');
+    const note=panel.querySelector('.admin-note');if(note)note.insertAdjacentElement('afterend',nav);else panel.insertBefore(nav,panel.firstChild);
+    const mainGroups=[...panel.querySelectorAll('details.odc-admin-group')];
+    // If the admin organizer has not run yet, invoke its existing non-destructive grouping first.
+    if(!mainGroups.length&&typeof window.odcUpgradeAdmin==='function'){window.odcUpgradeAdmin();}
+    const groups=[...panel.querySelectorAll('details.odc-admin-group')];
+    if(extra&&extra.parentElement!==panel)panel.appendChild(extra);
+    // Build independent tab groups inside the former Learn Daily/Quiz management area.
+    const innerNav=extra?.querySelector('.odc-admin-nav');if(innerNav)innerNav.classList.add('hidden');
+    const innerGroups=[];
+    if(extra){
+      let current=null;
+      [...extra.children].forEach(node=>{
+        if(node===innerNav)return;
+        if(node.tagName==='H3'){
+          const title=node.textContent.toLowerCase();
+          const key=title.includes('registered profiles')?'users':title.includes('important study material')?'pdf':'quiz';
+          current={key,nodes:[node]};innerGroups.push(current);
+        }else if(current){current.nodes.push(node);}
+      });
+    }
+    function setTab(key){
+      nav.querySelectorAll('button').forEach(b=>b.classList.toggle('active',b.dataset.adminTab===key));
+      groups.forEach(g=>{
+        const title=g.querySelector('summary')?.textContent.toLowerCase()||'';
+        const show=key==='shorthand'?(/shorthand|kailash chandra/.test(title)):key==='typing'?title.includes('english typing'):key==='results'?title.includes('student practice results'):false;
+        g.classList.toggle('odc-admin-view-hidden',!show);
+        if(show)g.open=true;
+      });
+      const showExtra=['quiz','users','pdf'].includes(key);
+      if(extra)extra.classList.toggle('hidden',!showExtra);
+      innerGroups.forEach(g=>g.nodes.forEach(n=>n.classList.toggle('odc-admin-view-hidden',g.key!==key)));
+      if(showExtra){const group=innerGroups.find(g=>g.key===key);group?.nodes[0]?.scrollIntoView({block:'nearest'});}
+      else panel.scrollIntoView({block:'start',behavior:'smooth'});
+    }
+    nav.addEventListener('click',e=>{const b=e.target.closest('[data-admin-tab]');if(b)setTab(b.dataset.adminTab);});
+    panel.dataset.setAdminTab='ready';panel._odcSetAdminTab=setTab;setTab('shorthand');
+  }
+  const originalShowPanel=window.showPanel;
+  if(typeof originalShowPanel==='function')window.showPanel=function(name){originalShowPanel(name);if(name==='admin'&&profile?.role==='admin'){setupAdminNavigation();requestAnimationFrame(()=>panelTabDefault());}};
+  function panelTabDefault(){const p=$id('adminPanel');if(p?._odcSetAdminTab)p._odcSetAdminTab('shorthand');}
+  function init(){if($id('pdfCategoryFilter'))$id('pdfCategoryFilter').value='all';setupAdminNavigation();if(profile?.role==='admin')window.loadAdminLearn();}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+</script>
 </body></html>
