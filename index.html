@@ -517,9 +517,9 @@ async function startTypingTest(){if(typingStarted)return;if(!$('passageSelect').
 async function finishTypingTest(reason='manual'){if(!typingStarted)return;clearInterval(englishElapsedHandle);englishElapsedHandle=null;englishElapsedSeconds=Math.max(0,Math.floor((Date.now()-typingStartTime)/1000));updateTimer();typingStarted=false;$('typingInput').setAttribute('contenteditable','false');$('submitTyping').disabled=true;$('startTyping').disabled=false;$('duration').disabled=false;$('passageSelect').disabled=false;const typed=editorPlainText($('typingInput')),typedHtml=sanitizeTypingHtml($('typingInput').innerHTML),elapsed=Math.max(1/60,englishElapsedSeconds/60),words=typed.trim()?typed.trim().split(/\s+/).length:0,gross=Math.round(words/elapsed),r=compareText(activePassage.passage,typed),totalMistakes=r.wrong+r.missing+r.extra,net=Math.max(0,Math.round(gross*r.accuracy/100));showMessage('typingResult',reason==='auto'?'Test completed.':'Test submitted!',r.accuracy>=90?'good':'info');$('typingResult').innerHTML=`<b>${reason==='auto'?'Test completed!':'Test submitted!'}</b><div class="result-dashboard"><div class="result-card"><small>Words typed</small><b>${words}</b></div><div class="result-card"><small>Gross WPM</small><b>${gross}</b></div><div class="result-card"><small>Net WPM</small><b>${net}</b></div><div class="result-card"><small>Accuracy</small><b>${r.accuracy}%</b></div><div class="result-card"><small>Total Mistakes</small><b>${totalMistakes}</b></div><div class="result-card"><small>Incorrect</small><b>${r.wrong}</b></div><div class="result-card"><small>Missing</small><b>${r.missing}</b></div><div class="result-card"><small>Extra</small><b>${r.extra}</b></div><div class="result-card"><small>Punctuation</small><b>${r.punctuation?'Correct':'Errors'}</b></div><div class="result-card"><small>Time taken</small><b>${Math.floor(englishElapsedSeconds/60)}m ${englishElapsedSeconds%60}s</b></div></div><h3 style="margin-top:18px">Formatted Passage and Your Answer</h3><div class="compare-box"><div class="compare-col"><b>Original Passage</b><div class="compare-rich-content">${activePassage.passage_html?sanitizeTypingHtml(activePassage.passage_html):plainTextToHtml(activePassage.passage)}</div></div><div class="compare-col"><b>Your Answer</b><div class="compare-rich-content">${typedHtml}</div></div></div>`;scrollToOpenedContent('typingResult');try{await db.from('results').insert({user_id:currentUser.id,practice_type:'typing',accuracy:r.accuracy,gross_wpm:gross,net_wpm:net,details:{total_mistakes:totalMistakes,wrong:r.wrong,missing:r.missing,extra:r.extra,punctuation_ok:r.punctuation,elapsed_seconds:englishElapsedSeconds}});}catch(e){console.warn('Could not save typing result',e);}}
 function resetTypingTest(){clearInterval(englishElapsedHandle);englishElapsedHandle=null;clearInterval(typingTimer);typingStarted=false;englishElapsedSeconds=0;typingStartTime=null;updateTimer();$('typingInput').innerHTML='';$('typingInput').setAttribute('contenteditable','false');$('typingPassage').textContent='Choose a passage, then press Start Test.';activePassage=null;$('passageSelect').disabled=false;$('typingResult').classList.add('hidden');$('startTyping').disabled=false;$('submitTyping').disabled=true;$('duration').disabled=false;}
 /* Switching Shorthand sub-sections also closes any previously opened exercise/work view. */
-const originalSetExerciseCollection=window.setExerciseCollection;
-window.setExerciseCollection=function(collection){$('shorthandWork')?.classList.add('hidden');$('kailashWork')?.classList.add('hidden');$('shorthandPassageWork')?.classList.add('hidden');$('kailashExerciseList')?.classList.remove('hidden');$('shorthandPassageList')?.classList.remove('hidden');selectedExercise=null;selectedKailashExercise=null;selectedShorthandPassage=null;if(typeof originalSetExerciseCollection==='function')originalSetExerciseCollection(collection);};
-async function loadAdminUsers(){const box=$('adminUsers');if(!box||profile?.role!=='admin')return;box.textContent='Loading profiles...';const {data,error}=await db.from('profiles').select('id,full_name,role,created_at').order('created_at',{ascending:false});if(error){box.textContent='Could not load profiles: '+error.message;return;}box.innerHTML=(data||[]).map(u=>`<div class="quiz-admin-item"><b>${escapeHtml(u.full_name||'Unnamed')}</b> · ${escapeHtml(u.role||'student')}<br><input id="userName_${u.id}" value="${escapeHtml(u.full_name||'')}" aria-label="Name"><button type="button" onclick="adminUpdateProfile('${u.id}')">Save name</button><button type="button" class="secondary" onclick="adminDeleteProfile('${u.id}')">Delete profile</button></div>`).join('')||'No profiles.';}
+const originalSetExerciseCollection=setExerciseCollection;
+function setExerciseCollection(collection){$('shorthandWork')?.classList.add('hidden');$('kailashWork')?.classList.add('hidden');$('shorthandPassageWork')?.classList.add('hidden');$('kailashExerciseList')?.classList.remove('hidden');$('shorthandPassageList')?.classList.remove('hidden');selectedExercise=null;selectedKailashExercise=null;selectedShorthandPassage=null;originalSetExerciseCollection(collection);}
+async function loadAdminUsers(){const box=$('adminUsers');if(!box||profile?.role!=='admin')return;box.textContent='Loading profiles...';const {data,error}=await db.from('profiles').select('id,full_name,role,created_at').order('created_at',{ascending:false});if(error){box.textContent='Could not load profiles: '+error.message;return;}box.innerHTML=(data||[]).map(u=>{const created=u.created_at?new Date(u.created_at).toLocaleString():'Not available';return `<div class="quiz-admin-item"><b>${escapeHtml(u.full_name||'Unnamed')}</b><div class="muted">Role: ${escapeHtml(u.role||'student')} · Joined: ${escapeHtml(created)}</div><div class="muted" style="font-size:.82em;word-break:break-all">Profile ID: ${escapeHtml(u.id)}</div><label for="userName_${u.id}">Name</label><input id="userName_${u.id}" value="${escapeHtml(u.full_name||'')}" aria-label="Name"><button type="button" onclick="adminUpdateProfile('${u.id}')">Save name</button><button type="button" class="secondary" onclick="adminDeleteProfile('${u.id}')">Delete profile row</button></div>`}).join('')||'No profiles.';}
 async function adminUpdateProfile(id){if(profile?.role!=='admin')return;const name=$('userName_'+id)?.value.trim()||'';const {error}=await db.from('profiles').update({full_name:name}).eq('id',id);if(error)alert(error.message);else alert('Profile name updated.');}
 async function adminDeleteProfile(id){if(profile?.role!=='admin'||id===currentUser.id)return alert('You cannot delete your own profile.');if(!confirm('Delete this profile row only? The Auth login account will remain.'))return;const {error}=await db.from('profiles').delete().eq('id',id);if(error)alert(error.message);else loadAdminUsers();}
 /* Quiz question builder initialization is handled inside the original showPanel function. */
@@ -788,7 +788,7 @@ odcSetTypingFontSize(18);
   window.editStudyPdf=async function(id){if(profile?.role!=='admin')return;const {data,error}=await db.from(TABLE).select('*').eq('id',id).single();if(error)return alert(error.message);$id('pdfAdminTitle').value=data.title||'';$id('pdfAdminCategory').value=data.category||'Important Study Material';$id('pdfAdminDescription').value=data.description||'';$id('pdfAdminPublished').checked=!!data.published;$id('pdfAdminEditingId').value=data.id;$id('pdfAdminFile').value='';$id('pdfAdminSaveBtn').textContent='Save PDF Changes';$id('pdfAdminCancelBtn').classList.remove('hidden');$id('pdfAdminTitle').scrollIntoView({behavior:'smooth',block:'center'});};
   window.cancelStudyPdfEdit=function(){if($id('pdfAdminTitle'))$id('pdfAdminTitle').value='';if($id('pdfAdminDescription'))$id('pdfAdminDescription').value='';if($id('pdfAdminFile'))$id('pdfAdminFile').value='';if($id('pdfAdminEditingId'))$id('pdfAdminEditingId').value='';if($id('pdfAdminPublished'))$id('pdfAdminPublished').checked=true;if($id('pdfAdminSaveBtn'))$id('pdfAdminSaveBtn').textContent='Upload PDF';$id('pdfAdminCancelBtn')?.classList.add('hidden');};
   window.toggleStudyPdf=async function(id,published){if(profile?.role!=='admin')return;const {error}=await db.from(TABLE).update({published,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);await window.loadAdminLearn();await window.loadLearnContent();};
-  window.deleteStudyPdf=async function(id){if(profile?.role!=='admin'||!confirm('Delete this PDF permanently?'))return;const {data,error}=await db.from(TABLE).select('storage_path').eq('id',id).single();if(error)return alert(error.message);const {error:delErr}=await db.from(TABLE).delete().eq('id',id);if(delErr)return alert(delErr.message);if(data?.storage_path)await db.storage.from(BUCKET).remove([data.storage_path]);await window.loadAdminLearn();await window.loadLearnContent();};
+  window.deleteStudyPdf=async function(id){if(profile?.role!=='admin'||!confirm('Delete this PDF from the Library? This removes only the selected PDF record.'))return;const {data,error}=await db.from(TABLE).select('storage_path,title').eq('id',id).single();if(error)return alert('Could not locate PDF: '+error.message);const {error:delErr}=await db.from(TABLE).delete().eq('id',id);if(delErr)return alert('Could not delete PDF record: '+delErr.message);if(data?.storage_path){const {error:storageErr}=await db.storage.from(BUCKET).remove([data.storage_path]);if(storageErr)alert('PDF entry removed from Library, but its stored file could not be removed: '+storageErr.message);}await window.loadAdminLearn();await window.loadLearnContent();};
 
   // Replace the old Learn Daily section name in nav and panel headings without changing other sections.
   document.querySelectorAll('[data-panel="learn"]').forEach(b=>{b.textContent='📚 PDF Library';});
@@ -879,107 +879,4 @@ odcSetTypingFontSize(18);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
-
-<style id="odc-typing-fullscreen-final-fix">
-/* English typing full-screen: compact controls + equal top/bottom practice panels. */
-#typingTestArea:fullscreen{
-  box-sizing:border-box!important;width:100%!important;height:100%!important;max-height:100%!important;
-  overflow:auto!important;padding:8px 12px 10px!important;background:#f3f7ff!important;
-  display:flex!important;flex-direction:column!important;gap:6px!important;
-}
-#typingTestArea:fullscreen>p:first-child{display:none!important;}
-#typingTestArea:fullscreen>.grid{display:none!important;}
-#typingTestArea:fullscreen>.topline{
-  flex:0 0 auto!important;display:flex!important;align-items:center!important;justify-content:space-between!important;
-  gap:8px!important;margin:0!important;padding:3px 2px!important;min-height:34px!important;
-}
-#typingTestArea:fullscreen>.topline>div:first-child{display:flex!important;align-items:center!important;gap:7px!important;}
-#typingTestArea:fullscreen>.topline .muted{font-size:10px!important;line-height:1!important;}
-#typingTestArea:fullscreen #timer{font-size:clamp(18px,2.2vh,25px)!important;line-height:1!important;font-weight:800!important;}
-#typingTestArea:fullscreen>.topline button{
-  padding:4px 8px!important;margin:0 2px!important;font-size:11px!important;line-height:1.15!important;
-  min-height:25px!important;border-radius:7px!important;
-}
-#typingTestArea:fullscreen>.practice-layout{
-  flex:1 1 auto!important;min-height:0!important;height:auto!important;margin:0!important;
-  display:grid!important;grid-template-columns:minmax(0,1fr)!important;
-  grid-template-rows:minmax(0,1fr) minmax(0,1fr)!important;gap:8px!important;align-items:stretch!important;
-}
-#typingTestArea:fullscreen .practice-layout>.practice-pane{
-  display:flex!important;flex-direction:column!important;min-width:0!important;min-height:0!important;
-  height:100%!important;overflow:hidden!important;padding:8px!important;box-sizing:border-box!important;
-}
-#typingTestArea:fullscreen .practice-pane>h3{flex:0 0 auto!important;margin:0 0 4px!important;font-size:14px!important;}
-#typingTestArea:fullscreen #typingPassage,
-#typingTestArea:fullscreen #typingInput{
-  flex:1 1 0!important;min-height:0!important;height:auto!important;max-height:none!important;
-  width:100%!important;box-sizing:border-box!important;overflow:auto!important;
-  font-size:var(--odc-typing-font-size,18px)!important;line-height:1.65!important;
-}
-#typingTestArea:fullscreen .pane-toolbar{
-  flex:0 0 auto!important;display:flex!important;gap:3px!important;flex-wrap:wrap!important;
-  max-height:42px!important;overflow:auto!important;margin:0 0 5px!important;padding:0!important;
-}
-#typingTestArea:fullscreen .pane-toolbar button{
-  padding:3px 6px!important;min-height:23px!important;font-size:10px!important;line-height:1!important;
-}
-#typingTestArea:fullscreen #submitTyping{
-  flex:0 0 auto!important;align-self:flex-end!important;width:auto!important;min-width:86px!important;
-  padding:5px 12px!important;margin:5px 0 0!important;font-size:12px!important;line-height:1.1!important;
-}
-#typingTestArea:fullscreen #typingResult{flex:0 0 auto!important;margin-top:8px!important;}
-#typingTestArea:fullscreen .practice-layout>.practice-pane:first-child{grid-row:1!important;}
-#typingTestArea:fullscreen .practice-layout>.practice-pane:last-child{grid-row:2!important;}
-@media(max-height:620px){
- #typingTestArea:fullscreen{padding:5px 8px!important;gap:4px!important;}
- #typingTestArea:fullscreen>.practice-layout{gap:5px!important;}
- #typingTestArea:fullscreen .practice-pane{padding:5px!important;}
- #typingTestArea:fullscreen .pane-toolbar{max-height:32px!important;}
-}
-</style>
-<script id="odc-typing-fullscreen-final-behavior">
-(function(){
-  const area=document.getElementById('typingTestArea');
-  if(!area||area.dataset.odcFsFinal==='1')return;
-  area.dataset.odcFsFinal='1';
-  const timer=document.getElementById('timer');
-  const fsButton=area.querySelector('.topline button[onclick*="toggleEnglishFullscreen"]');
-  function syncFullscreen(){
-    const active=document.fullscreenElement===area;
-    area.classList.toggle('odc-typing-is-fullscreen',active);
-    if(fsButton)fsButton.textContent=active?'↙ Exit':'⛶ Full Screen';
-    if(timer)timer.setAttribute('aria-label','Time remaining');
-    if(active){
-      const input=document.getElementById('typingInput');
-      const passage=document.getElementById('typingPassage');
-      if(input&&passage){
-        const size=getComputedStyle(input).fontSize;
-        passage.style.fontSize=size;input.style.fontSize=size;
-      }
-    }
-  }
-  document.addEventListener('fullscreenchange',syncFullscreen);
-  const oldFinish=window.finishTypingTest;
-  if(typeof oldFinish==='function'){
-    window.finishTypingTest=async function(reason='manual'){
-      await oldFinish(reason);
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        const result=document.getElementById('typingResult');
-        if(result&&!result.classList.contains('hidden'))result.scrollIntoView({behavior:'smooth',block:'start'});
-      }));
-    };
-  }
-  // Keep both reading and typing text at the same display size in full-screen and normal view.
-  const observer=new MutationObserver(()=>{
-    const input=document.getElementById('typingInput'),passage=document.getElementById('typingPassage');
-    if(!input||!passage)return;
-    const v=getComputedStyle(input).fontSize;
-    if(passage.style.fontSize!==v)passage.style.fontSize=v;
-  });
-  const input=document.getElementById('typingInput');
-  if(input)observer.observe(input,{attributes:true,attributeFilter:['style']});
-  syncFullscreen();
-})();
-</script>
-
 </body></html>
