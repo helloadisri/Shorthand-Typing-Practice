@@ -519,8 +519,31 @@ function resetTypingTest(){clearInterval(englishElapsedHandle);englishElapsedHan
 /* Switching Shorthand sub-sections also closes any previously opened exercise/work view. */
 const originalSetExerciseCollection=setExerciseCollection;
 function setExerciseCollection(collection){$('shorthandWork')?.classList.add('hidden');$('kailashWork')?.classList.add('hidden');$('shorthandPassageWork')?.classList.add('hidden');$('kailashExerciseList')?.classList.remove('hidden');$('shorthandPassageList')?.classList.remove('hidden');selectedExercise=null;selectedKailashExercise=null;selectedShorthandPassage=null;originalSetExerciseCollection(collection);}
-async function loadAdminUsers(){const box=$('adminUsers');if(!box||profile?.role!=='admin')return;box.textContent='Loading profiles...';const {data,error}=await db.from('profiles').select('id,full_name,role,created_at').order('created_at',{ascending:false});if(error){box.textContent='Could not load profiles: '+error.message;return;}box.innerHTML=(data||[]).map(u=>`<div class="quiz-admin-item"><b>${escapeHtml(u.full_name||'Unnamed')}</b> · ${escapeHtml(u.role||'student')}<br><input id="userName_${u.id}" value="${escapeHtml(u.full_name||'')}" aria-label="Name"><button type="button" onclick="adminUpdateProfile('${u.id}')">Save name</button><button type="button" class="secondary" onclick="adminDeleteProfile('${u.id}')">Delete profile</button></div>`).join('')||'No profiles.';}
-async function adminUpdateProfile(id){if(profile?.role!=='admin')return;const name=$('userName_'+id)?.value.trim()||'';const {error}=await db.from('profiles').update({full_name:name}).eq('id',id);if(error)alert(error.message);else alert('Profile name updated.');}
+async function loadAdminUsers(){
+ const box=$('adminUsers');if(!box||profile?.role!=='admin')return;
+ box.innerHTML='<p class="muted">Loading registered user details...</p>';
+ // Read only existing profile rows. No Auth users, profiles, or other records are created/deleted here.
+ const {data,error}=await db.from('profiles').select('*').order('created_at',{ascending:false});
+ if(error){box.innerHTML='<div class="status bad">Could not load user details: '+escapeHtml(error.message)+'</div>';return;}
+ if(!data?.length){box.innerHTML='<p class="muted">No registered profiles found.</p>';return;}
+ box.innerHTML=data.map(u=>{
+   const id=String(u.id||'');
+   const safeId=id.replace(/[^a-zA-Z0-9_-]/g,'');
+   const joined=u.created_at?new Date(u.created_at).toLocaleString():'Not available';
+   const email=u.email||u.email_address||u.user_email||'Email not stored in profile';
+   return `<div class="quiz-admin-item" style="margin:10px 0;padding:14px">
+    <b>${escapeHtml(u.full_name||'Unnamed user')}</b> <span class="muted">· ${escapeHtml(u.role||'student')}</span>
+    <div class="muted" style="margin:6px 0">Email: ${escapeHtml(email)}</div>
+    <div class="muted" style="margin:6px 0">Registered: ${escapeHtml(joined)}</div>
+    <div class="muted" style="font-size:11px;word-break:break-all;margin:6px 0">Profile ID: ${escapeHtml(id)}</div>
+    <label for="userName_${safeId}">User name</label>
+    <input id="userName_${safeId}" value="${escapeHtml(u.full_name||'')}" aria-label="User name">
+    <button type="button" onclick="adminUpdateProfile('${safeId}')">Save name</button>
+    <button type="button" class="secondary" onclick="adminDeleteProfile('${safeId}')">Delete profile record</button>
+   </div>`;
+ }).join('');
+}
+async function adminUpdateProfile(id){if(profile?.role!=='admin')return;const name=$('userName_'+id)?.value.trim()||'';if(!name)return alert('Please enter a user name.');const {error}=await db.from('profiles').update({full_name:name}).eq('id',id);if(error)alert(error.message);else{alert('Profile name updated.');await loadAdminUsers();}}
 async function adminDeleteProfile(id){if(profile?.role!=='admin'||id===currentUser.id)return alert('You cannot delete your own profile.');if(!confirm('Delete this profile row only? The Auth login account will remain.'))return;const {error}=await db.from('profiles').delete().eq('id',id);if(error)alert(error.message);else loadAdminUsers();}
 /* Quiz question builder initialization is handled inside the original showPanel function. */
 
@@ -785,10 +808,32 @@ odcSetTypingFontSize(18);
     if(storage_path&&oldPath)await db.storage.from(BUCKET).remove([oldPath]);
     window.cancelStudyPdfEdit();showMessage('learnAdminMessage',editingId?'PDF details updated successfully.':'PDF uploaded successfully.','good');await window.loadAdminLearn();await window.loadLearnContent();
   };
-  window.editStudyPdf=async function(id){if(profile?.role!=='admin')return;const {data,error}=await db.from(TABLE).select('*').eq('id',id).single();if(error)return alert(error.message);$id('pdfAdminTitle').value=data.title||'';$id('pdfAdminCategory').value=data.category||'Important Study Material';$id('pdfAdminDescription').value=data.description||'';$id('pdfAdminPublished').checked=!!data.published;$id('pdfAdminEditingId').value=data.id;$id('pdfAdminFile').value='';$id('pdfAdminSaveBtn').textContent='Save PDF Changes';$id('pdfAdminCancelBtn').classList.remove('hidden');$id('pdfAdminTitle').scrollIntoView({behavior:'smooth',block:'center'});};
+  window.editStudyPdf=async function(id){
+    if(profile?.role!=='admin')return;
+    const {data,error}=await db.from(TABLE).select('*').eq('id',id).single();
+    if(error)return alert('Could not open this PDF for editing: '+error.message);
+    if(!$id('pdfAdminTitle')||!$id('pdfAdminCategory'))return alert('PDF edit form is not available.');
+    const category=$id('pdfAdminCategory');
+    if(data.category&&!Array.from(category.options).some(o=>o.value===data.category||o.text===data.category)){
+      const option=document.createElement('option');option.value=data.category;option.textContent=data.category;category.appendChild(option);
+    }
+    $id('pdfAdminTitle').value=data.title||'';category.value=data.category||'Important Study Material';
+    $id('pdfAdminDescription').value=data.description||'';$id('pdfAdminPublished').checked=!!data.published;
+    $id('pdfAdminEditingId').value=data.id;$id('pdfAdminFile').value='';
+    $id('pdfAdminSaveBtn').textContent='Save PDF Changes';$id('pdfAdminCancelBtn').classList.remove('hidden');
+    $id('pdfAdminTitle').scrollIntoView({behavior:'smooth',block:'center'});
+  };
   window.cancelStudyPdfEdit=function(){if($id('pdfAdminTitle'))$id('pdfAdminTitle').value='';if($id('pdfAdminDescription'))$id('pdfAdminDescription').value='';if($id('pdfAdminFile'))$id('pdfAdminFile').value='';if($id('pdfAdminEditingId'))$id('pdfAdminEditingId').value='';if($id('pdfAdminPublished'))$id('pdfAdminPublished').checked=true;if($id('pdfAdminSaveBtn'))$id('pdfAdminSaveBtn').textContent='Upload PDF';$id('pdfAdminCancelBtn')?.classList.add('hidden');};
   window.toggleStudyPdf=async function(id,published){if(profile?.role!=='admin')return;const {error}=await db.from(TABLE).update({published,updated_at:new Date().toISOString()}).eq('id',id);if(error)return alert(error.message);await window.loadAdminLearn();await window.loadLearnContent();};
-  window.deleteStudyPdf=async function(id){if(profile?.role!=='admin'||!confirm('Delete this PDF permanently?'))return;const {data,error}=await db.from(TABLE).select('storage_path').eq('id',id).single();if(error)return alert(error.message);const {error:delErr}=await db.from(TABLE).delete().eq('id',id);if(delErr)return alert(delErr.message);if(data?.storage_path)await db.storage.from(BUCKET).remove([data.storage_path]);await window.loadAdminLearn();await window.loadLearnContent();};
+  window.deleteStudyPdf=async function(id){
+    if(profile?.role!=='admin'||!confirm('Delete this PDF permanently?'))return;
+    const {data,error}=await db.from(TABLE).select('storage_path').eq('id',id).single();
+    if(error)return alert('Could not find this PDF: '+error.message);
+    const {error:delErr}=await db.from(TABLE).delete().eq('id',id);
+    if(delErr)return alert('PDF record was not deleted: '+delErr.message);
+    if(data?.storage_path){const {error:storageError}=await db.storage.from(BUCKET).remove([data.storage_path]);if(storageError)alert('PDF record deleted, but its stored file could not be removed: '+storageError.message);}
+    await window.loadAdminLearn();await window.loadLearnContent();
+  };
 
   // Replace the old Learn Daily section name in nav and panel headings without changing other sections.
   document.querySelectorAll('[data-panel="learn"]').forEach(b=>{b.textContent='📚 PDF Library';});
