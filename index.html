@@ -982,4 +982,20 @@ odcSetTypingFontSize(18);
 })();
 </script>
 
+
+<style id="odc-final-quiz-review-fix">
+#quizResult{position:sticky;top:8px;z-index:8;max-height:38vh;overflow:auto;box-shadow:0 5px 18px rgba(20,40,80,.15)}
+#quizResult .result-dashboard{display:flex;flex-wrap:wrap;gap:8px}
+#quizResult .odc-review-correct{background:#e8f8ee!important;border-left:5px solid #239455!important}
+#quizResult .odc-review-wrong{background:#fff0f0!important;border-left:5px solid #d94c4c!important}
+#quizResult .odc-review-unanswered{background:#fff8e7!important;border-left:5px solid #d99a22!important}
+.odc-quiz-again{margin:8px 0!important}
+</style>
+<script id="odc-final-quiz-review-fix-js">
+(function(){
+ const original=window.submitQuiz; if(typeof original!=='function'||window.__odcQuizFinalWrapped)return;window.__odcQuizFinalWrapped=true;
+ window.submitQuiz=function(auto){original(auto);const result=document.getElementById('quizResult');if(!result)return;let btn=result.querySelector('.odc-quiz-again');if(!btn){btn=document.createElement('button');btn.type='button';btn.className='odc-quiz-again';btn.textContent='↻ Test Again';btn.onclick=function(){if(typeof window.loadQuizzes==='function')window.loadQuizzes();if(typeof window.openQuiz==='function'&&window.activeQuiz&&window.activeQuiz.id)window.openQuiz(window.activeQuiz.id);else{document.getElementById('quizResult').classList.add('hidden');document.getElementById('quizQuestions').innerHTML='';}};result.appendChild(btn);}};
+})();
+</script>
+
 </body></html>
